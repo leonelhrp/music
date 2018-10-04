@@ -2,7 +2,11 @@
   <div id="app">
     <img src="./assets/logo.png">
     <h1>{{ title }}</h1>
+    <select v-model="selectedCountry">
+      <option v-for="country in countries" :value="country.value">{{ country.name }}</option>
+    </select>
     <h2>Artistas</h2>
+    <spinner v-show="loading"></spinner>
     <ul>
       <artist v-for="artist in artists" :artist="artist" :key="artist.mbid"></artist>
     </ul>
@@ -12,26 +16,50 @@
 <script>
 import getArtists from './api'
 import Artist from './components/Artist.vue'
+import Spinner from './components/Spinner.vue'
 
 export default {
   name: 'app',
   data () {
     return {
-      title: 'Canciones',
-      artists: []
+      title: 'Music!',
+      artists: [],
+      countries: [
+        { name: 'Venezuela', value: 'venezuela' },
+        { name: 'Chile', value: 'chile' },
+        { name: 'Argentina', value: 'argentina' },
+      ],
+      selectedCountry: 'venezuela',
+      loading: true
     }
   },
 
   components: {
-    Artist
+    Artist,
+    Spinner
+  },
+
+  methods: {
+    refrestArtist(){
+      this.loading = true
+      this.artists = []
+      getArtists(this.selectedCountry)
+      .then((artists) => {
+        this.artists = artists
+        this.loading = false
+      })
+    }
   },
 
   mounted() {
-    getArtists()
-      .then((artists) => {
-        this.artists = artists
-      })
+    this.refrestArtist()
   },
+
+  watch: {
+    selectedCountry(){
+      this.refrestArtist()
+    }
+  }
 }
 </script>
 
